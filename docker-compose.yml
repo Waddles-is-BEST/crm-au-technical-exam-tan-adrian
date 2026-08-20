@@ -1,0 +1,104 @@
+services:
+  # ─────────────────────────────────────────────
+  # SERVICE 1: api — Laravel PHP-FPM backend
+  # ─────────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: crm_api
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+      - /var/www/html/vendor      # exclude vendor from bind mount
+    environment:
+      APP_ENV: local
+      APP_KEY: ${APP_KEY}
+      DB_CONNECTION: mysql
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-crm_db}
+      DB_USERNAME: ${DB_USERNAME:-crm_user}
+      DB_PASSWORD: ${DB_PASSWORD:-crm_password}
+      ELASTICSEARCH_HOST: http://searcher:9200
+    depends_on:
+      database:
+        condition: service_healthy
+      searcher:
+        condition: service_healthy
+    networks:
+      - crm_network
+
+  # ─────────────────────────────────────────────
+  # SERVICE 2: controller — Nginx load balancer
+  # ─────────────────────────────────────────────
+  controller:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    container_name: crm_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - crm_network
+
+  # ─────────────────────────────────────────────
+  # SERVICE 3: database — MySQL 8
+  # ─────────────────────────────────────────────
+  database:
+    image: mysql:8.0
+    container_name: crm_database
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-crm_db}
+      MYSQL_USER: ${DB_USERNAME:-crm_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-crm_password}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
+    volumes:
+      - crm_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root_password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - crm_network
+
+  # ─────────────────────────────────────────────
+  # SERVICE 4: searcher — Elasticsearch 8
+  # ─────────────────────────────────────────────
+  searcher:
+    image: elasticsearch:8.12.2
+    container_name: crm_elasticsearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    volumes:
+      - crm_es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 15
+    networks:
+      - crm_network
+
+# ─────────────────────────────────────────────
+# Named volumes for data persistence
+# ─────────────────────────────────────────────
+volumes:
+  crm_mysql_data:
+  crm_es_data:
+
+# ─────────────────────────────────────────────
+# Shared network
+# ─────────────────────────────────────────────
+networks:
+  crm_network:
+    driver: bridge

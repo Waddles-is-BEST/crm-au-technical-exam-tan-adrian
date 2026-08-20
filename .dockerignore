@@ -1,0 +1,9 @@
+.git
+.gitignore
+.editorconfig
+backend/vendor
+backend/storage/*.key
+backend/.phpunit.result.cache
+frontend/node_modules
+frontend/dist
+frontend/.angular
