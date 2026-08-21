@@ -1,0 +1,153 @@
+<!-- Back navigation & Page Header -->
+<div class="mb-6">
+  <a routerLink="/customers" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors mb-3">
+    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+    </svg>
+    Back to Customers
+  </a>
+  <h1 class="text-2xl font-bold tracking-tight text-slate-900">
+    {{ isEditMode ? 'Edit Customer' : 'Add New Customer' }}
+  </h1>
+</div>
+
+@if (isLoading) {
+  <div class="flex flex-col items-center justify-center py-16 text-slate-500">
+    <svg class="animate-spin h-8 w-8 text-indigo-600 mb-3" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    <p class="text-sm font-medium">Loading customer data...</p>
+  </div>
+} @else {
+  @if (errorMessage) {
+    <div class="max-w-xl mb-5 p-4 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-sm">
+      {{ errorMessage }}
+    </div>
+  }
+
+  <div class="max-w-xl bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <div class="p-6 sm:p-8">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
+
+        <!-- First Name -->
+        <div>
+          <label for="first_name" class="block text-sm font-semibold text-slate-700 mb-1">
+            First Name <span class="text-rose-500">*</span>
+          </label>
+          <input
+            id="first_name"
+            type="text"
+            formControlName="first_name"
+            placeholder="e.g. John"
+            class="block w-full px-3.5 py-2.5 bg-white border rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 shadow-sm transition"
+            [class.border-rose-300]="getError('first_name')"
+            [class.focus:ring-rose-500]="getError('first_name')"
+            [class.focus:border-rose-500]="getError('first_name')"
+            [class.border-slate-300]="!getError('first_name')"
+            [class.focus:ring-indigo-500]="!getError('first_name')"
+            [class.focus:border-indigo-500]="!getError('first_name')"
+          />
+          @if (getError('first_name')) {
+            <p class="mt-1.5 text-xs text-rose-600 font-medium">{{ getError('first_name') }}</p>
+          }
+        </div>
+
+        <!-- Last Name -->
+        <div>
+          <label for="last_name" class="block text-sm font-semibold text-slate-700 mb-1">
+            Last Name <span class="text-rose-500">*</span>
+          </label>
+          <input
+            id="last_name"
+            type="text"
+            formControlName="last_name"
+            placeholder="e.g. Doe"
+            class="block w-full px-3.5 py-2.5 bg-white border rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 shadow-sm transition"
+            [class.border-rose-300]="getError('last_name')"
+            [class.focus:ring-rose-500]="getError('last_name')"
+            [class.focus:border-rose-500]="getError('last_name')"
+            [class.border-slate-300]="!getError('last_name')"
+            [class.focus:ring-indigo-500]="!getError('last_name')"
+            [class.focus:border-indigo-500]="!getError('last_name')"
+          />
+          @if (getError('last_name')) {
+            <p class="mt-1.5 text-xs text-rose-600 font-medium">{{ getError('last_name') }}</p>
+          }
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label for="email" class="block text-sm font-semibold text-slate-700 mb-1">
+            Email Address <span class="text-rose-500">*</span>
+          </label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="e.g. john.doe@example.com"
+            class="block w-full px-3.5 py-2.5 bg-white border rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 shadow-sm transition"
+            [class.border-rose-300]="getError('email')"
+            [class.focus:ring-rose-500]="getError('email')"
+            [class.focus:border-rose-500]="getError('email')"
+            [class.border-slate-300]="!getError('email')"
+            [class.focus:ring-indigo-500]="!getError('email')"
+            [class.focus:border-indigo-500]="!getError('email')"
+          />
+          @if (getError('email')) {
+            <p class="mt-1.5 text-xs text-rose-600 font-medium">{{ getError('email') }}</p>
+          }
+        </div>
+
+        <!-- Contact Number -->
+        <div>
+          <label for="contact_number" class="block text-sm font-semibold text-slate-700 mb-1">
+            Contact Number <span class="text-xs font-normal text-slate-400">(optional)</span>
+          </label>
+          <input
+            id="contact_number"
+            type="text"
+            formControlName="contact_number"
+            placeholder="e.g. +63 912 345 6789"
+            class="block w-full px-3.5 py-2.5 bg-white border rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 shadow-sm transition"
+            [class.border-rose-300]="getError('contact_number')"
+            [class.focus:ring-rose-500]="getError('contact_number')"
+            [class.focus:border-rose-500]="getError('contact_number')"
+            [class.border-slate-300]="!getError('contact_number')"
+            [class.focus:ring-indigo-500]="!getError('contact_number')"
+            [class.focus:border-indigo-500]="!getError('contact_number')"
+          />
+          @if (getError('contact_number')) {
+            <p class="mt-1.5 text-xs text-rose-600 font-medium">{{ getError('contact_number') }}</p>
+          }
+        </div>
+
+        <!-- Actions -->
+        <div class="pt-4 flex items-center space-x-3 border-t border-slate-100">
+          <button
+            type="submit"
+            [disabled]="isSubmitting"
+            class="inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-all"
+          >
+            @if (isSubmitting) {
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Saving...
+            } @else {
+              {{ isEditMode ? 'Save Changes' : 'Create Customer' }}
+            }
+          </button>
+          <a
+            routerLink="/customers"
+            class="px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition"
+          >
+            Cancel
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}
