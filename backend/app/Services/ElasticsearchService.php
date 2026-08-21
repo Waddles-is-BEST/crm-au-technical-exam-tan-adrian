@@ -118,15 +118,43 @@ class ElasticsearchService
      */
     public function search(string $query, int $size = 100): array
     {
+        $cleanQuery = mb_strtolower(trim($query));
+
+        if ($cleanQuery === '') {
+            return [];
+        }
+
         try {
+            // Escape special Lucene characters for query_string wildcard
+            $escaped = preg_replace('/([+\-!(){}\[\]^"~*?:\\\/])/', '\\\\$1', $cleanQuery);
+
             $response = Http::post("{$this->host}/{$this->index}/_search", [
                 'size'  => $size,
                 'query' => [
-                    'multi_match' => [
-                        'query'     => $query,
-                        'fields'    => ['first_name', 'last_name', 'email'],
-                        'type'      => 'best_fields',
-                        'fuzziness' => 'AUTO',
+                    'bool' => [
+                        'should' => [
+                            [
+                                'multi_match' => [
+                                    'query'  => $cleanQuery,
+                                    'fields' => ['first_name^3', 'last_name^3', 'email^2'],
+                                    'type'   => 'phrase_prefix',
+                                ],
+                            ],
+                            [
+                                'multi_match' => [
+                                    'query'     => $cleanQuery,
+                                    'fields'    => ['first_name', 'last_name', 'email'],
+                                    'fuzziness' => 'AUTO',
+                                ],
+                            ],
+                            [
+                                'query_string' => [
+                                    'query'  => "*{$escaped}*",
+                                    'fields' => ['first_name', 'last_name', 'email'],
+                                ],
+                            ],
+                        ],
+                        'minimum_should_match' => 1,
                     ],
                 ],
             ]);
@@ -149,3 +177,4 @@ class ElasticsearchService
         }
     }
 }
+

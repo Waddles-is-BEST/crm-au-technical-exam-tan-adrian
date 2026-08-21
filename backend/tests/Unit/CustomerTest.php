@@ -57,4 +57,20 @@ class CustomerTest extends TestCase
 
         $this->assertNull($customer->contact_number);
     }
+
+    /**
+     * Test that email is automatically normalized to lowercase.
+     */
+    public function test_customer_email_is_normalized_to_lowercase(): void
+    {
+        $customer = Customer::create([
+            'first_name'     => 'Alice',
+            'last_name'      => 'Wonderland',
+            'email'          => 'ALICE.UPPER@EXAMPLE.COM',
+            'contact_number' => null,
+        ]);
+
+        $this->assertEquals('alice.upper@example.com', $customer->email);
+    }
 }
+

@@ -30,4 +30,13 @@ class Customer extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    /**
+     * Always normalize email to lowercase.
+     */
+    public function setEmailAttribute(?string $value): void
+    {
+        $this->attributes['email'] = $value ? strtolower(trim($value)) : $value;
+    }
 }
+
